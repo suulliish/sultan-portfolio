@@ -134,3 +134,45 @@ function tickClock(){
   clockEl.textContent = p(ast.getHours()) + ':' + p(ast.getMinutes()) + ':' + p(ast.getSeconds());
 }
 tickClock(); setInterval(tickClock, 1000);
+
+// ---- pitch modal (popup PDF viewer) ----
+const modal = document.getElementById('pitchModal');
+const modalFrame = document.getElementById('modalFrame');
+const modalTitle = document.getElementById('modalTitle');
+const modalOpen = document.getElementById('modalOpen');
+const modalLoading = document.getElementById('modalLoading');
+let lastFocused = null;
+
+function openModal(pdf, title){
+  if (!modal || !pdf) return;
+  lastFocused = document.activeElement;
+  if (modalTitle) modalTitle.textContent = title || 'Разбор';
+  if (modalOpen) modalOpen.href = pdf;
+  if (modalLoading) modalLoading.style.display = 'flex';
+  modalFrame.src = pdf + '#view=FitH';          // PDF viewer gives native scroll + zoom
+  modal.classList.add('open');
+  modal.setAttribute('aria-hidden', 'false');
+  document.body.classList.add('modal-open');
+}
+function closeModal(){
+  if (!modal) return;
+  modal.classList.remove('open');
+  modal.setAttribute('aria-hidden', 'true');
+  document.body.classList.remove('modal-open');
+  setTimeout(() => { modalFrame.src = 'about:blank'; }, 260); // stop rendering
+  if (lastFocused && lastFocused.focus) lastFocused.focus();
+}
+document.querySelectorAll('.pitch-card').forEach((card) => {
+  card.addEventListener('click', () => openModal(card.dataset.pdf, card.dataset.title));
+});
+if (modalFrame){
+  modalFrame.addEventListener('load', () => {
+    if (modalFrame.src.indexOf('about:blank') === -1 && modalLoading) modalLoading.style.display = 'none';
+  });
+}
+if (modal){
+  modal.querySelectorAll('[data-close]').forEach((el) => el.addEventListener('click', closeModal));
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal.classList.contains('open')) closeModal();
+  });
+}
