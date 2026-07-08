@@ -115,7 +115,9 @@ function initWorld(){
   if (!isMobile){
     composer = new EffectComposer(renderer);
     composer.addPass(new RenderPass(scene, camera));
-    composer.addPass(new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.6, 0.85, 0.82));
+    // Higher threshold + tighter radius = only the brightest gold rim-light
+    // blooms (Lusion-technique research: accents glow, not the whole scene).
+    composer.addPass(new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.55, 0.68, 0.9));
   }
 
   // --- scroll-driven path keyframes (p = 0 hero .. 1 contact) ---
