@@ -136,9 +136,14 @@ function initWorld(){
     mouse.lastX=mouse.tx; mouse.lastY=mouse.ty;
   },{passive:true});
 
+  // Single source of truth: prefer Lenis's already-smoothed scroll value
+  // instead of raw window.scrollY — avoids a second independent lerp
+  // fighting Lenis's own smoothing (the "not smooth" root cause).
   function progress(){
     const h = document.documentElement.scrollHeight - window.innerHeight;
-    return h>0 ? Math.min(Math.max((window.scrollY||window.pageYOffset)/h,0),1) : 0;
+    if (h<=0) return 0;
+    const y = (window.lenis && typeof window.lenis.scroll === 'number') ? window.lenis.scroll : (window.scrollY||window.pageYOffset);
+    return Math.min(Math.max(y/h,0),1);
   }
 
   function resize(){
@@ -150,15 +155,21 @@ function initWorld(){
 
   const clock = new THREE.Clock();
   let running = true, raf = null, p = 0;
+  // Drive rendering off the SAME ticker as Lenis/GSAP (one RAF loop for the
+  // whole page) instead of a competing independent requestAnimationFrame —
+  // eliminates the 1-2 frame read-after-write desync between systems.
+  const usingTicker = !!(window.gsap && window.gsap.ticker);
 
   function renderOnce(){ if(composer) composer.render(); else renderer.render(scene,camera); }
-  function frame(){
+  function tick(){
     if(!running) return;
     const t = clock.getElapsedTime();
     uniforms.uTime.value = t; pMat.uniforms.uTime.value = t;
     uniforms.uAmp.value *= 0.94;
-    // ease scroll progress
-    p += (progress()-p)*0.08;
+    // Lenis already smooths scroll; only add our own easing as a fallback
+    // when Lenis isn't present (raw scrollY alone is jumpy).
+    const target = progress();
+    p = window.lenis ? target : p + (target-p)*0.08;
     orb.position.x = track(orbX,p)*w + mouse.x*0.35;
     orb.position.y = track(orbY,p) - mouse.y*0.3;
     orb.scale.setScalar(track(orbS,p));
@@ -174,15 +185,17 @@ function initWorld(){
     rings.children.forEach(m=>m.rotation.z += m.userData.spd);
     particles.rotation.y = track(partR,p) + t*0.01;
     renderOnce();
-    raf = requestAnimationFrame(frame);
+    if (!usingTicker) raf = requestAnimationFrame(tick);
   }
-  if (REDUCED){ p = progress(); renderOnce(); } else frame();
+  function startLoop(){ if (usingTicker) window.gsap.ticker.add(tick); else tick(); }
+  function stopLoop(){ if (usingTicker) window.gsap.ticker.remove(tick); else if (raf) cancelAnimationFrame(raf); }
+  if (REDUCED){ p = progress(); renderOnce(); } else startLoop();
 
   // pause when tab hidden (canvas is always on-screen, so only visibility matters)
   document.addEventListener('visibilitychange', ()=>{
     if (REDUCED) return;
-    if (document.hidden){ running=false; if(raf) cancelAnimationFrame(raf); }
-    else if(!running){ running=true; clock.start(); frame(); }
+    if (document.hidden){ running=false; stopLoop(); }
+    else if(!running){ running=true; clock.start(); startLoop(); }
   });
 }
 
