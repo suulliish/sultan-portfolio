@@ -24,7 +24,8 @@ document.querySelectorAll('a[data-scroll]').forEach((a) => {
     e.preventDefault();
     closeMenu();
     const top = id === '#top' ? 0 : el.getBoundingClientRect().top + window.scrollY - 10;
-    window.scrollTo({ top, behavior:'smooth' });
+    if (window.lenis) window.lenis.scrollTo(top, { duration: 1.1 });
+    else window.scrollTo({ top, behavior: 'smooth' });
   });
 });
 
@@ -40,10 +41,12 @@ if (burger){
   });
 }
 
-// ---- hero intro ----
-requestAnimationFrame(() => setTimeout(() => {
-  const h = document.querySelector('.hero'); if (h) h.classList.add('in');
-}, 90));
+// ---- hero intro (skip if presentation.js owns the reveal via preloader) ----
+if (!window.__presentation) {
+  requestAnimationFrame(() => setTimeout(() => {
+    const h = document.querySelector('.hero'); if (h) h.classList.add('in');
+  }, 90));
+}
 
 // ---- count-up ----
 function animateCount(el){
