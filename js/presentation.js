@@ -71,7 +71,7 @@ function initLenis(){
 
 // ---- scene indicator: active chapter as you scroll ----
 function initSceneIndicator(){
-  const ids = ['top','otan','early','range','method','about','contact'];
+  const ids = ['top','otan','early','range','compare','method','about','contact'];
   const wrap = document.getElementById('scenes');
   const dots = wrap ? [...wrap.querySelectorAll('.sc')] : [];
   const setActive = (i) => dots.forEach((s, j) => s.classList.toggle('active', j === i));

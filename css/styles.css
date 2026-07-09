@@ -307,6 +307,21 @@ body.modal-open{overflow:hidden}
 .scenes .sc.active .sc-l,.scenes .sc:hover .sc-l{opacity:1;transform:none}
 @media(max-width:1120px){.scenes{display:none}}
 
+/* ---------- HONEST COMPARISON ---------- */
+.cmp{margin-top:44px;display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+@media(max-width:860px){.cmp{grid-template-columns:1fr}}
+.cmp-col{background:var(--bg);padding:34px 28px}
+.cmp-col.cmp-me{background:linear-gradient(160deg,#171410,#0e0e0d);position:relative}
+.cmp-col.cmp-me::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:var(--gold)}
+.cmp-h{font-family:"Inter Tight";font-size:19px;font-weight:600}
+.cmp-price{margin-top:8px;font-size:13px;color:var(--dim);font-family:"Inter Tight"}
+.cmp-price.gold{color:var(--gold);font-weight:600}
+.cmp-col ul{list-style:none;margin-top:24px;display:flex;flex-direction:column;gap:14px}
+.cmp-col li{font-size:14px;line-height:1.4;padding-left:24px;position:relative;color:#C0C0C8}
+.cmp-col li::before{position:absolute;left:0;top:0;font-family:"Inter Tight";font-weight:700}
+.cmp-col li.bad::before{content:"−";color:var(--dim)}
+.cmp-col li.ok::before{content:"✓";color:var(--gold)}
+
 /* ---------- REDUCED MOTION ---------- */
 @media(prefers-reduced-motion:reduce){
   *{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
